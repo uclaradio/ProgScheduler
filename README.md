@@ -1,6 +1,6 @@
 # ProgScheduler
 
-Processes our dj's submitted entries to programming department's quarterly show application to create a preliminary schedule.
+Creates a preliminary show schedule by processing our djs' submitted entries to programming department's quarterly show application.
 
 Usage: `python3 schedule.py Show_Apps_Wave_2.csv`
 
