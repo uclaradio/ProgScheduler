@@ -2,10 +2,17 @@
 
 import csv
 import re
+import sys
+
+if len(sys.argv) < 2:
+	print("usage: py schedule.py [input file name]")
+	exit(1)
+
+inputFilename = sys.argv[1]
 
 def buildScheduleCSV(inputFilepath, outputFilepath):
 	schedule = {}
-	csvFieldNames = ["Start Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+	csvFieldNames = ["Start Time", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 	scheduleDays = [day.lower() for day in csvFieldNames[1:]]
 	for day in scheduleDays:
 		schedule[day] = {}
@@ -40,7 +47,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 				times = timepattern.findall(request)
 				days = daypattern.findall(request)
 				if len(times) < 1 or len(days) < 1:
-					print("error: skipping invalid entry")
+					print("skipping invalid entry")
 					print("-> \"%s #%d: %s\"" % (name, i, request))
 					continue
 
@@ -49,7 +56,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 				if "pm" in request:
 					time += 12
 
-				# print("processed", name, request, " => ", day, time)
+				# print("processed", "#%d" % i, name, request, " => ", day, time)
 				if day in schedule:
 					if time not in schedule[day]:
 						schedule[day][time] = []
@@ -64,7 +71,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 
 		minHour = min(min(schedule[day]) for day in scheduleDays)
 		maxHour = max(max(schedule[day]) for day in scheduleDays)
-		for time in range(minHour, maxHour):
+		for time in range(minHour, maxHour + 1):
 			humanTime = "%d%s" % ((12 if (time % 12) == 0 else (time % 12)), "am" if time < 12 else "pm")
 			fields = {csvFieldNames[0]: humanTime}
 
@@ -86,4 +93,4 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 	print("Finished.")
 
 
-buildScheduleCSV("Show Apps Wave 2.csv", "Schedule.csv")
+buildScheduleCSV(inputFilename, "Schedule.csv")
