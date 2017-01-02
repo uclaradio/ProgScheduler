@@ -5,7 +5,7 @@ import re
 
 def buildScheduleCSV(inputFilepath, outputFilepath):
 	schedule = {}
-	csvFieldNames = ["Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+	csvFieldNames = ["Start Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 	scheduleDays = [day.lower() for day in csvFieldNames[1:]]
 	for day in scheduleDays:
 		schedule[day] = {}
@@ -22,6 +22,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 		for row in reader:
 			name = row["Name"]
 			email = row["Email"]
+			requests = []
 
 			# "#1 Preference"
 			for i in range(1, 11):
@@ -30,6 +31,12 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 					continue
 
 				request = row[requestIndex].lower().strip()
+				if request in requests:
+					# skip duplicate requests
+					continue
+				else:
+					requests.append(request)
+
 				times = timepattern.findall(request)
 				days = daypattern.findall(request)
 				if len(times) < 1 or len(days) < 1:
@@ -46,7 +53,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 				if day in schedule:
 					if time not in schedule[day]:
 						schedule[day][time] = []
-					schedule[day][time].append("#i: " + name)
+					schedule[day][time].append((i, name))
 
 	# print(schedule)
 
@@ -58,12 +65,16 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 		minHour = min(min(schedule[day]) for day in scheduleDays)
 		maxHour = max(max(schedule[day]) for day in scheduleDays)
 		for time in range(minHour, maxHour):
-			fields = {"Time": time}
+			humanTime = "%d%s" % ((12 if (time % 12) == 0 else (time % 12)), "am" if time < 12 else "pm")
+			fields = {csvFieldNames[0]: humanTime}
 
 			for day in csvFieldNames[1:]:
 				if time in schedule[day.lower()]:
 					# format people who want this spot
-					people = ",\n".join(str(peep) for peep in schedule[day.lower()][time])
+					peeps = schedule[day.lower()][time]
+					# sort people by first element in tuple: their preference #
+					peeps.sort(key=lambda tup: tup[0])
+					people = "\n".join("#%d: %s" % peep for peep in peeps)
 					fields[day] = people
 				else:
 					# nobody wants this spot
@@ -73,5 +84,6 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 
 	print("")
 	print("Finished.")
+
 
 buildScheduleCSV("Show Apps Wave 2.csv", "Schedule.csv")
