@@ -53,7 +53,7 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 
 				time = int(times[0]) % 12
 				day = days[0]
-				if "pm" in request:
+				if "am" not in request:
 					time += 12
 
 				# print("processed", "#%d" % i, name, request, " => ", day, time)
