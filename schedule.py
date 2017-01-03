@@ -10,7 +10,12 @@ if len(sys.argv) < 2:
 
 inputFilename = sys.argv[1]
 
-def buildScheduleCSV(inputFilepath, outputFilepath):
+'''
+Creates preliminary schedule from submitted show applications
+@param inputFilepath: location of csv with submitted show times
+@param outputFilepath: location to write csv with preliminary schedule
+'''
+def writeScheduleCSV(inputFilepath, outputFilepath):
 	schedule = {}
 	csvFieldNames = ["Start Time", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 	scheduleDays = [day.lower() for day in csvFieldNames[1:]]
@@ -89,8 +94,39 @@ def buildScheduleCSV(inputFilepath, outputFilepath):
 
 			writer.writerow(fields)
 
-	print("")
-	print("Finished.")
+	print("Finished creating schedule")
 
 
-buildScheduleCSV(inputFilename, "Schedule.csv")
+'''
+Creates list of djs who submitted an entry in input csv
+@param inputFilepath: location of csv with submitted show times
+@param outputFilepath: location to write csv with list of djs
+'''
+def writeNameList(inputFilepath, outputFilepath):
+	djs = []
+	scheduleDays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+	# Input file
+	with open(inputFilepath) as csvfile:
+		reader = csv.DictReader(csvfile)
+
+		# process app entries
+		for row in reader:
+			name = row["Name"]
+			email = row["Email"]
+			djs.append({"name": name, "email": email})
+
+	# Output file
+	with open(outputFilepath, 'w') as csvfile:
+		writer = csv.DictWriter(csvfile, fieldnames=["name", "email"])
+		writer.writeheader()
+
+		for dj in djs:
+			writer.writerow(dj)
+
+	print("Finished listing entry names")
+
+
+writeScheduleCSV(inputFilename, "Schedule.csv")
+writeNameList(inputFilename, "Entries.csv")
+print("Done.")
